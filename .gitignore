@@ -14,3 +14,6 @@ __MACOSX/
 .env
 *.env
 secrets.txt
+
+/venv
+__pycache__/

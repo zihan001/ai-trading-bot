@@ -26,6 +26,10 @@ services:
   backend:
     build: ./backend
     env_file: .env
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/alembic:/app/alembic
+      - ./backend/alembic.ini:/app/alembic.ini
     depends_on:
       postgres:
         condition: service_healthy
@@ -34,10 +38,11 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     ports: ["8000:8000"]
 
-  # optional heartbeat worker to prove wiring
   worker:
     build: ./worker
     env_file: .env
+    volumes:
+      - ./worker/app:/app/app
     depends_on:
       redis:
         condition: service_healthy

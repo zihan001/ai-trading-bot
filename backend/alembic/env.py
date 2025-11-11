@@ -3,12 +3,27 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
+# Load environment variables from .env file if present
+from dotenv import load_dotenv
+load_dotenv()
+
 # this Alembic Config object
 config = context.config
 
-# pass DATABASE_URL from env
+# Override sqlalchemy.url with DATABASE_URL from environment
 db_url = os.getenv("DATABASE_URL")
 if db_url:
+    config.set_main_option("sqlalchemy.url", db_url)
+elif not config.get_main_option("sqlalchemy.url"):
+    # Fallback: construct from individual env vars
+    db_url = (
+        f"postgresql+psycopg2://"
+        f"{os.getenv('POSTGRES_USER', 'bot')}:"
+        f"{os.getenv('POSTGRES_PASSWORD', 'bot')}@"
+        f"{os.getenv('POSTGRES_HOST', 'localhost')}:"
+        f"{os.getenv('POSTGRES_PORT', '5432')}/"
+        f"{os.getenv('POSTGRES_DB', 'trading')}"
+    )
     config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging.
@@ -33,7 +48,7 @@ def run_migrations_offline():
 
 def run_migrations_online():
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
+        config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
