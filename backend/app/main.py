@@ -17,15 +17,14 @@ async def health():
     # check postgres
     pg_ok = False
     try:
-        conn = await asyncpg.connect(
+        async with await asyncpg.connect(
             user=os.getenv("POSTGRES_USER", "bot"),
             password=os.getenv("POSTGRES_PASSWORD", "bot"),
             database=os.getenv("POSTGRES_DB", "trading"),
             host=os.getenv("POSTGRES_HOST", "postgres"),
             port=int(os.getenv("POSTGRES_PORT", "5432")),
-        )
-        await conn.execute("SELECT 1;")
-        await conn.close()
+        ) as conn:
+            await conn.execute("SELECT 1;")
         pg_ok = True
     except Exception:
         pg_ok = False
