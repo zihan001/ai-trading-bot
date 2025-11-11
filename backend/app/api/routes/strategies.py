@@ -53,7 +53,7 @@ def list_strategies(
     )
     rows, total = repo.list_and_count(q)
     return {
-        "items": rows,
+        "items": [StrategyRead.model_validate(row) for row in rows],
         "total": total,
         "limit": limit,
         "offset": offset,

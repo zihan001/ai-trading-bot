@@ -1,15 +1,17 @@
 from __future__ import annotations
+from datetime import datetime
+from uuid import UUID
 from typing import Annotated, Literal, Optional
 from pydantic import BaseModel, Field
 
 AssetType = Literal["equity", "etf", "forex", "crypto", "future", "option", "bond", "other"]
 
 class AssetBase(BaseModel):
-    symbol: Annotated[str, Field(strip_whitespace=True, min_length=1, max_length=50)]
-    name: Annotated[str, Field(strip_whitespace=True, min_length=1, max_length=200)]
-    exchange: Annotated[str, Field(strip_whitespace=True, min_length=1, max_length=50)]
+    symbol: Annotated[str, Field(min_length=1, max_length=50)]
+    name: Annotated[str, Field(min_length=1, max_length=200)]
+    exchange: Annotated[str, Field(min_length=1, max_length=50)]
     asset_type: AssetType
-    currency: Annotated[str, Field(strip_whitespace=True, min_length=3, max_length=10)] = "USD"
+    currency: Annotated[str, Field(min_length=3, max_length=10)] = "USD"
     is_active: bool = True
     meta_json: Optional[str] = None  # if you store JSON string or use dict with actual JSON column
 
@@ -18,21 +20,20 @@ class AssetCreate(AssetBase):
 
 class AssetUpdate(BaseModel):
     # all optional fields for PATCH semantics
-    symbol: Optional[Annotated[str, Field(strip_whitespace=True, min_length=1, max_length=50)]] = None
-    name: Optional[Annotated[str, Field(strip_whitespace=True, min_length=1, max_length=200)]] = None
-    exchange: Optional[Annotated[str, Field(strip_whitespace=True, min_length=1, max_length=50)]] = None
+    symbol: Optional[Annotated[str, Field(min_length=1, max_length=50)]] = None
+    name: Optional[Annotated[str, Field(min_length=1, max_length=200)]] = None
+    exchange: Optional[Annotated[str, Field(min_length=1, max_length=50)]] = None
     asset_type: Optional[AssetType] = None
-    currency: Optional[Annotated[str, Field(strip_whitespace=True, min_length=3, max_length=10)]] = None
+    currency: Optional[Annotated[str, Field(min_length=3, max_length=10)]] = None
     is_active: Optional[bool] = None
     meta_json: Optional[str] = None
 
 class AssetRead(AssetBase):
-    id: str
-    created_at: str
-    updated_at: str
+    id: UUID
+    created_at: datetime
+    updated_at: datetime
 
-    class Config:
-        from_attributes = True  # Pydantic v2
+    model_config = {"from_attributes": True}
 
 class AssetQuery(BaseModel):
     # for list endpoint filtering

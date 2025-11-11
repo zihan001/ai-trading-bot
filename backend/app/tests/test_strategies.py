@@ -6,6 +6,7 @@ from app.models.strategy import Strategy
 from app.repositories.strategy_repo import StrategyRepository
 
 
+@pytest.mark.asyncio
 class TestStrategyEndpoints:
     """Test strategy CRUD endpoints."""
 

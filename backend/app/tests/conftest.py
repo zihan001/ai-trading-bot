@@ -1,10 +1,15 @@
 import os
+import sys
 import pytest
+import pytest_asyncio
 from typing import Generator, AsyncGenerator
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 from httpx import AsyncClient, ASGITransport
+
+# Add parent directory to Python path to allow imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 # Set test environment variables before importing app
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
@@ -14,7 +19,8 @@ os.environ["JWT_SECRET"] = "test_secret"
 os.environ["ENV"] = "test"
 
 from app.main import app
-from app.db import Base, get_db
+from app.db import Base
+from app.api.deps import get_db
 
 # Create in-memory SQLite engine for tests
 TEST_DATABASE_URL = "sqlite:///:memory:"
@@ -55,7 +61,7 @@ def db() -> Generator[Session, None, None]:
         Base.metadata.drop_all(bind=engine)
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def async_client(db: Session) -> AsyncGenerator[AsyncClient, None]:
     """Create an async HTTP client for testing FastAPI endpoints."""
     app.dependency_overrides[get_db] = override_get_db
@@ -89,4 +95,14 @@ def sample_asset_data():
         "asset_type": "equity",
         "currency": "USD",
         "is_active": True
+    }
+
+
+@pytest.fixture
+def sample_symbol_data():
+    """Sample symbol data for tests."""
+    return {
+        "symbol": "AAPL",
+        "name": "Apple Inc.",
+        "active": True
     }

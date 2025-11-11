@@ -4,7 +4,7 @@ from typing import Annotated, Literal, Optional
 from pydantic import BaseModel, Field
 
 class StrategyBase(BaseModel):
-    name: Annotated[str, Field(strip_whitespace=True, min_length=1, max_length=100)]
+    name: Annotated[str, Field(min_length=1, max_length=100)]
     description: Optional[str] = None
     is_active: bool = True
 
@@ -13,7 +13,7 @@ class StrategyCreate(StrategyBase):
 
 class StrategyUpdate(BaseModel):
     # All optional fields for PATCH semantics
-    name: Optional[Annotated[str, Field(strip_whitespace=True, min_length=1, max_length=100)]] = None
+    name: Optional[Annotated[str, Field(min_length=1, max_length=100)]] = None
     description: Optional[str] = None
     is_active: Optional[bool] = None
 

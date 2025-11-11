@@ -1,4 +1,5 @@
 import uuid
+import pytest
 from httpx import AsyncClient
 
 def sample():
@@ -11,6 +12,7 @@ def sample():
         "is_active": True
     }
 
+@pytest.mark.asyncio
 async def test_create_and_get(async_client: AsyncClient):
     r = await async_client.post("/assets", json=sample())
     assert r.status_code == 201, r.text
@@ -21,11 +23,13 @@ async def test_create_and_get(async_client: AsyncClient):
     assert r2.status_code == 200
     assert r2.json()["symbol"] == "AAPL"
 
+@pytest.mark.asyncio
 async def test_unique_exchange_symbol(async_client: AsyncClient):
     await async_client.post("/assets", json=sample())
     r = await async_client.post("/assets", json=sample())
     assert r.status_code == 409
 
+@pytest.mark.asyncio
 async def test_list_filters(async_client: AsyncClient):
     await async_client.post("/assets", json=sample())
     r = await async_client.get("/assets?exchange=NASDAQ&symbol=AAPL")

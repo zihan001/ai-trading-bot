@@ -5,6 +5,7 @@ import redis.asyncio as aioredis
 
 from app.api.routes.strategies import router as strategies_router
 from app.api.routes.assets import router as assets_router
+from app.api.routes.symbols import router as symbols_router
 
 app = FastAPI(title="AI Trading Bot", version="0.1.0")
 
@@ -62,5 +63,7 @@ def broker_status():
         "api_secret_present": has_secret
     }
 
-app.include_router(strategies_router)  
-app.include_router(assets_router)     
+# Include routers
+app.include_router(strategies_router)
+app.include_router(assets_router)
+app.include_router(symbols_router)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Sequence, Tuple
+from uuid import UUID
 from sqlalchemy import select, func, asc, desc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -27,7 +28,7 @@ class AssetRepository:
         self.db.refresh(entity)
         return entity
 
-    def get(self, asset_id: str) -> Asset | None:
+    def get(self, asset_id: UUID) -> Asset | None:
         return self.db.get(Asset, asset_id)
 
     def list_and_count(self, q: AssetQuery) -> Tuple[Sequence[Asset], int]:
