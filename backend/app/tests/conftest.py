@@ -106,3 +106,18 @@ def sample_symbol_data():
         "name": "Apple Inc.",
         "active": True
     }
+
+
+@pytest.fixture
+def sample_order_data():
+    """Sample order data for tests."""
+    import uuid
+    return {
+        "symbol_id": str(uuid.uuid4()),
+        "side": "buy",
+        "type": "limit",
+        "quantity": "100",
+        "price": "150.50",
+        "time_in_force": "day",
+        "paper": True
+    }
