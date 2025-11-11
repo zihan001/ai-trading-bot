@@ -42,7 +42,30 @@ def upgrade() -> None:
     op.create_index("ix_orders_status", "orders", ["status"])
     op.create_index("ix_orders_broker_order_id", "orders", ["broker_order_id"])
 
+    # Create trigger function to automatically update updated_at timestamp
+    op.execute("""
+        CREATE OR REPLACE FUNCTION update_updated_at_column()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.updated_at = CURRENT_TIMESTAMP;
+            RETURN NEW;
+        END;
+        $$ language 'plpgsql';
+    """)
+
+    # Apply trigger to orders table
+    op.execute("""
+        CREATE TRIGGER update_orders_updated_at
+        BEFORE UPDATE ON orders
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column();
+    """)
+
 def downgrade() -> None:
+    # Drop trigger and function
+    op.execute("DROP TRIGGER IF EXISTS update_orders_updated_at ON orders")
+    op.execute("DROP FUNCTION IF EXISTS update_updated_at_column()")
+
     op.drop_index("ix_orders_broker_order_id", table_name="orders")
     op.drop_index("ix_orders_status", table_name="orders")
     op.drop_index("ix_orders_symbol", table_name="orders")
