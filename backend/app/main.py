@@ -31,13 +31,16 @@ async def health():
 
     # check redis
     redis_ok = False
+    r = None
     try:
         r = aioredis.from_url(os.getenv("REDIS_URL", "redis://redis:6379/0"))
         pong = await r.ping()
         redis_ok = bool(pong)
-        await r.aclose()
     except Exception:
         redis_ok = False
+    finally:
+        if r is not None:
+            await r.aclose()
 
     status = "ok" if (env_ok and pg_ok and redis_ok) else "degraded"
     return {"status": status, "env": env_ok, "postgres": pg_ok, "redis": redis_ok}
