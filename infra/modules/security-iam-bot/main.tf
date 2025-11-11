@@ -20,8 +20,9 @@ resource "aws_iam_role_policy_attachment" "exec_base" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-# Allow decrypt for customer KMS key (always created since we always use KMS)
+# Allow decrypt for customer KMS key (only if kms_key_arn is provided)
 resource "aws_iam_policy" "exec_kms" {
+  count = var.kms_key_arn != null ? 1 : 0
   name  = "${var.name}-exec-kms"
   policy = jsonencode({
     Version = "2012-10-17",
@@ -34,8 +35,9 @@ resource "aws_iam_policy" "exec_kms" {
 }
 
 resource "aws_iam_role_policy_attachment" "exec_kms_attach" {
+  count      = var.kms_key_arn != null ? 1 : 0
   role       = aws_iam_role.exec.name
-  policy_arn = aws_iam_policy.exec_kms.arn
+  policy_arn = aws_iam_policy.exec_kms[0].arn
 }
 
 # Task role: app's own permissions (read specific secrets only)
@@ -54,11 +56,11 @@ resource "aws_iam_policy" "task_secrets" {
         Action   = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
         Resource = var.secrets_arns
       }],
-      [{
+      var.kms_key_arn != null ? [{
         Effect   = "Allow",
         Action   = ["kms:Decrypt","kms:DescribeKey"],
         Resource = var.kms_key_arn
-      }]
+      }] : []
     )
   })
 }
