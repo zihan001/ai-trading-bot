@@ -18,3 +18,7 @@ secrets.txt
 /venv
 __pycache__/
 copilot-instructions.md
+
+# Test coverage
+.coverage
+htmlcov/

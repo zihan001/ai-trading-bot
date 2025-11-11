@@ -16,6 +16,19 @@ class SymbolRepository:
         col = getattr(Symbol, field)
         return asc(col) if direction == "asc" else desc(col)
 
+    def _apply_filters(self, stmt, q: SymbolQuery):
+        """Apply query filters to a SQLAlchemy statement."""
+        if q.symbol:
+            stmt = stmt.where(Symbol.symbol == q.symbol)
+        if q.active is not None:
+            stmt = stmt.where(Symbol.active == q.active)
+        if q.search:
+            like = f"%{q.search}%"
+            stmt = stmt.where(
+                (Symbol.symbol.ilike(like)) | (Symbol.name.ilike(like))
+            )
+        return stmt
+
     def create(self, payload: SymbolCreate) -> Symbol:
         entity = Symbol(**payload.model_dump())
         self.db.add(entity)
@@ -32,16 +45,7 @@ class SymbolRepository:
 
     def list_and_count(self, q: SymbolQuery) -> Tuple[Sequence[Symbol], int]:
         stmt = select(Symbol)
-        
-        if q.symbol:
-            stmt = stmt.where(Symbol.symbol == q.symbol)
-        if q.active is not None:
-            stmt = stmt.where(Symbol.active == q.active)
-        if q.search:
-            like = f"%{q.search}%"
-            stmt = stmt.where(
-                (Symbol.symbol.ilike(like)) | (Symbol.name.ilike(like))
-            )
+        stmt = self._apply_filters(stmt, q)
 
         order = self._order_clause(q.order_by or "symbol", q.order_dir or "asc")
         stmt = stmt.order_by(order).offset(q.offset).limit(q.limit)
@@ -50,15 +54,7 @@ class SymbolRepository:
 
         # Count query with same filters
         count_stmt = select(func.count()).select_from(Symbol)
-        if q.symbol:
-            count_stmt = count_stmt.where(Symbol.symbol == q.symbol)
-        if q.active is not None:
-            count_stmt = count_stmt.where(Symbol.active == q.active)
-        if q.search:
-            like = f"%{q.search}%"
-            count_stmt = count_stmt.where(
-                (Symbol.symbol.ilike(like)) | (Symbol.name.ilike(like))
-            )
+        count_stmt = self._apply_filters(count_stmt, q)
 
         total = self.db.execute(count_stmt).scalar_one()
         return rows, total
