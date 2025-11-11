@@ -11,6 +11,7 @@ router = APIRouter(prefix="/assets", tags=["assets"])
 
 @router.post("", response_model=AssetRead, status_code=status.HTTP_201_CREATED)
 def create_asset(payload: AssetCreate, db: Session = Depends(get_db)):
+    """Create a new asset."""
     repo = AssetRepository(db)
     try:
         return repo.create(payload)
@@ -30,6 +31,12 @@ def list_assets(
     order_dir: str = Query("asc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db),
 ):
+    """
+    List assets with filtering, search, pagination, and ordering.
+    
+    Supports filtering by symbol, exchange, asset_type, and is_active.
+    Search performs case-insensitive matching on symbol and name fields.
+    """
     repo = AssetRepository(db)
     q = AssetQuery(
         symbol=symbol,
@@ -52,6 +59,7 @@ def list_assets(
 
 @router.get("/{asset_id}", response_model=AssetRead)
 def get_asset(asset_id: str, db: Session = Depends(get_db)):
+    """Get a single asset by ID."""
     repo = AssetRepository(db)
     try:
         # Convert string UUID to UUID object
@@ -66,6 +74,7 @@ def get_asset(asset_id: str, db: Session = Depends(get_db)):
 
 @router.patch("/{asset_id}", response_model=AssetRead)
 def update_asset(asset_id: str, patch: AssetUpdate, db: Session = Depends(get_db)):
+    """Update an asset (partial update)."""
     repo = AssetRepository(db)
     try:
         # Convert string UUID to UUID object
@@ -83,6 +92,7 @@ def update_asset(asset_id: str, patch: AssetUpdate, db: Session = Depends(get_db
 
 @router.delete("/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_asset(asset_id: str, db: Session = Depends(get_db)):
+    """Delete an asset."""
     repo = AssetRepository(db)
     try:
         # Convert string UUID to UUID object
