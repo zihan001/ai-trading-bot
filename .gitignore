@@ -1,0 +1,16 @@
+# Terraform
+**/.terraform/
+**/.terragrunt-cache/
+**/terraform.tfstate
+**/terraform.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+
+# OS cruft
+.DS_Store
+__MACOSX/
+# Env
+.env
+*.env
+secrets.txt
