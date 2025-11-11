@@ -1,6 +1,6 @@
 from __future__ import annotations
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
@@ -9,13 +9,13 @@ from app.repositories.asset_repo import AssetRepository
 
 router = APIRouter(prefix="/assets", tags=["assets"])
 
-@router.post("", response_model=AssetRead, status_code=201)
+@router.post("", response_model=AssetRead, status_code=status.HTTP_201_CREATED)
 def create_asset(payload: AssetCreate, db: Session = Depends(get_db)):
     repo = AssetRepository(db)
     try:
         return repo.create(payload)
     except ValueError as e:
-        raise HTTPException(status_code=409, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
 
 @router.get("", response_model=dict)
 def list_assets(
@@ -57,11 +57,11 @@ def get_asset(asset_id: str, db: Session = Depends(get_db)):
         # Convert string UUID to UUID object
         uuid_obj = UUID(asset_id)
     except ValueError:
-        raise HTTPException(status_code=422, detail="Invalid UUID format")
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid UUID format")
     
     entity = repo.get(uuid_obj)
     if not entity:
-        raise HTTPException(status_code=404, detail="Asset not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asset not found")
     return entity
 
 @router.patch("/{asset_id}", response_model=AssetRead)
@@ -71,27 +71,27 @@ def update_asset(asset_id: str, patch: AssetUpdate, db: Session = Depends(get_db
         # Convert string UUID to UUID object
         uuid_obj = UUID(asset_id)
     except ValueError:
-        raise HTTPException(status_code=422, detail="Invalid UUID format")
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid UUID format")
     
     entity = repo.get(uuid_obj)
     if not entity:
-        raise HTTPException(status_code=404, detail="Asset not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asset not found")
     try:
         return repo.update(entity, patch)
     except ValueError as e:
-        raise HTTPException(status_code=409, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
 
-@router.delete("/{asset_id}", status_code=204)
+@router.delete("/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_asset(asset_id: str, db: Session = Depends(get_db)):
     repo = AssetRepository(db)
     try:
         # Convert string UUID to UUID object
         uuid_obj = UUID(asset_id)
     except ValueError:
-        raise HTTPException(status_code=422, detail="Invalid UUID format")
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid UUID format")
     
     entity = repo.get(uuid_obj)
     if not entity:
-        raise HTTPException(status_code=404, detail="Asset not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asset not found")
     repo.delete(entity)
     return None
