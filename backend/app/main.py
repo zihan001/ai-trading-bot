@@ -4,8 +4,9 @@ import asyncpg
 import redis.asyncio as aioredis
 
 from app.api.routes.strategies import router as strategies_router
+from app.api.routes.assets import router as assets_router
 
-app = FastAPI(title="AI Trading Bot")
+app = FastAPI(title="AI Trading Bot", version="0.1.0")
 
 @app.get("/health")
 async def health():
@@ -61,4 +62,5 @@ def broker_status():
         "api_secret_present": has_secret
     }
 
-app.include_router(strategies_router, prefix="/strategies", tags=["strategies"])
+app.include_router(strategies_router)  
+app.include_router(assets_router)     
