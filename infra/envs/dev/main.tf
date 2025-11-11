@@ -35,7 +35,7 @@ module "secrets" {
 module "bot_iam" {
   source        = "../../modules/security-iam-bot"
   name          = "trading-bot"
-  secrets_arns  = [ for k, arn in module.secrets.arns : arn ]
+  secrets_arns  = values(module.secrets.arns)
   kms_key_arn   = module.kms.key_arn
 }
 
