@@ -54,7 +54,7 @@ resource "aws_iam_policy" "task_secrets" {
         Action   = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
         Resource = var.secrets_arns
       }],
-      [{
+      var.kms_key_arn == null ? [] : [{
         Effect   = "Allow",
         Action   = ["kms:Decrypt","kms:DescribeKey"],
         Resource = var.kms_key_arn
